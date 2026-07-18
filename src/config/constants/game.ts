@@ -1,0 +1,11 @@
+export const GAME = {
+    TASK_REWARD_XP: 100,
+
+    POMODORO_REWARD_XP: 20,
+
+    LATE_TASK_PENALTY: 30,
+
+    CHANGE_DUE_DATE_PENALTY: 20,
+
+    MAX_LEVEL: 999,
+} as const;

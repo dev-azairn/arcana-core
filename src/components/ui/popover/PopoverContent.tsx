@@ -1,0 +1,76 @@
+import { forwardRef } from "react";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+
+import { cn } from "@/utils";
+
+import type {
+    PopoverContentElement,
+    PopoverContentProps,
+} from "./Popover.types";
+
+const PopoverContent = forwardRef<
+    PopoverContentElement,
+    PopoverContentProps
+>(
+    (
+        {
+            className,
+            align = "center",
+            side = "bottom",
+            sideOffset = 8,
+            portal = true,
+            children,
+            ...props
+        },
+        ref
+    ) => {
+        const content = (
+            <PopoverPrimitive.Content
+                ref={ref}
+                align={align}
+                side={side}
+                sideOffset={sideOffset}
+                className={cn(
+                    "z-50 w-72 rounded-xl",
+                    "border border-slate-700/70",
+                    "bg-slate-950 p-4 text-slate-100",
+                    "shadow-2xl outline-none",
+                    "data-[state=open]:animate-in",
+                    "data-[state=closed]:animate-out",
+                    "data-[state=closed]:fade-out-0",
+                    "data-[state=open]:fade-in-0",
+                    "data-[state=closed]:zoom-out-95",
+                    "data-[state=open]:zoom-in-95",
+                    "data-[side=bottom]:slide-in-from-top-2",
+                    "data-[side=left]:slide-in-from-right-2",
+                    "data-[side=right]:slide-in-from-left-2",
+                    "data-[side=top]:slide-in-from-bottom-2",
+                    className
+                )}
+                {...props}
+            >
+                {children}
+
+                <PopoverPrimitive.Arrow
+                    width={12}
+                    height={6}
+                    className="fill-slate-950"
+                />
+            </PopoverPrimitive.Content>
+        );
+
+        if (!portal) {
+            return content;
+        }
+
+        return (
+            <PopoverPrimitive.Portal>
+                {content}
+            </PopoverPrimitive.Portal>
+        );
+    }
+);
+
+PopoverContent.displayName = "PopoverContent";
+
+export default PopoverContent;
