@@ -1,9 +1,8 @@
 export type TaskStatus =
-  | "pending"
-  | "in_progress"
-  | "completed"
-  | "failed"
-  | "cancelled";
+  | "TODO"
+  | "IN_PROGRESS"
+  | "DONE"
+  | "FAILED";
 
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
 

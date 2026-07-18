@@ -84,7 +84,7 @@ export default function PomodoroPage() {
 
   React.useEffect(() => {
     void TaskApi.getTasks().then((items) => {
-      const active = items.filter((task) => task.status !== "completed" && task.status !== "cancelled");
+      const active = items.filter((task) => task.status !== "DONE" && task.status !== "FAILED");
       setTasks(active);
       setTaskId((current) => current || active[0]?.id || "");
     }).catch((requestError) => setError(getErrorMessage(requestError)));

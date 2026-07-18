@@ -1,4 +1,5 @@
 export type TaskStatus =
-  | "pending"
-  | "in_progress"
-  | "completed";
+  | "TODO"
+  | "IN_PROGRESS"
+  | "DONE"
+  | "FAILED";

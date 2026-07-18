@@ -27,9 +27,7 @@ interface TaskFormValues {
 
 type TaskFilter =
   | "all"
-  | "pending"
-  | "in_progress"
-  | "completed";
+  | TaskStatus;
 
 function getErrorMessage(error: unknown): string {
   if (
@@ -64,14 +62,17 @@ function getErrorMessage(error: unknown): string {
 
 function getStatusLabel(status: TaskStatus) {
   switch (status) {
-    case "in_progress":
+    case "IN_PROGRESS":
       return "In progress";
 
-    case "completed":
-      return "Completed";
+    case "DONE":
+      return "Done";
+
+    case "FAILED":
+      return "Failed";
 
     default:
-      return "Pending";
+      return "To do";
   }
 }
 
@@ -79,16 +80,17 @@ function getNextStatus(
   status: TaskStatus,
 ): TaskStatus {
   switch (status) {
-    case "pending":
-      return "in_progress";
+    case "TODO":
+      return "IN_PROGRESS";
 
-    case "in_progress":
-      return "completed";
+    case "IN_PROGRESS":
+      return "DONE";
 
-    case "completed":
-      return "pending";
+    case "DONE":
+    case "FAILED":
+      return "TODO";
     default:
-      return "pending";
+      return "TODO";
   }
 }
 
@@ -342,9 +344,10 @@ export default function TasksPage() {
           {(
             [
               "all",
-              "pending",
-              "in_progress",
-              "completed",
+              "TODO",
+              "IN_PROGRESS",
+              "DONE",
+              "FAILED",
             ] as const
           ).map((value) => (
             <button
@@ -409,7 +412,7 @@ export default function TasksPage() {
                     }
                     className={[
                       "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors",
-                      task.status === "completed"
+                      task.status === "DONE"
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-primary hover:text-primary",
                     ].join(" ")}
@@ -417,7 +420,7 @@ export default function TasksPage() {
                     {isUpdating ? (
                       <LoaderCircle className="h-4 w-4 animate-spin" />
                     ) : task.status ===
-                      "completed" ? (
+                      "DONE" ? (
                       <Check className="h-4 w-4" />
                     ) : (
                       <Circle className="h-4 w-4" />
@@ -430,7 +433,7 @@ export default function TasksPage() {
                         className={[
                           "font-semibold",
                           task.status ===
-                          "completed"
+                          "DONE"
                             ? "text-muted-foreground line-through"
                             : "text-card-foreground",
                         ].join(" ")}
