@@ -12,6 +12,7 @@ import * as TaskApi from "@/api/task.api";
 import type { Task } from "@/types";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const SESSION_OPTIONS = [
@@ -68,6 +69,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 export default function PomodoroPage() {
+  const [mode, setMode] = React.useState<"TASK" | "NEW_QUEST">("TASK");
   const [selectedMinutes, setSelectedMinutes] = React.useState(25);
   const [secondsRemaining, setSecondsRemaining] = React.useState(
     selectedMinutes * 60,
@@ -79,6 +81,8 @@ export default function PomodoroPage() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
   const [taskId, setTaskId] = React.useState("");
   const [sessionId, setSessionId] = React.useState<string | null>(null);
+  const [newQuestTitle, setNewQuestTitle] = React.useState("");
+  const [newQuestTaskId, setNewQuestTaskId] = React.useState<string | null>(null);
 
   const hasCompleted = secondsRemaining === 0;
 
@@ -150,11 +154,38 @@ export default function PomodoroPage() {
 
   async function toggleTimer() {
     if (running) { setRunning(false); return; }
-    if (!taskId) { setError("Choose a quest before starting a focus session."); return; }
+    let focusTaskId = mode === "TASK" ? taskId : newQuestTaskId;
+    if (mode === "TASK" && !focusTaskId) {
+      setError("Choose a quest before starting a focus session.");
+      return;
+    }
+    if (mode === "NEW_QUEST" && !focusTaskId) {
+      const title = newQuestTitle.trim();
+      if (title.length < 2) {
+        setError("Enter a focus quest title with at least 2 characters.");
+        return;
+      }
+      setSaving(true);
+      try {
+        const createdTask = await TaskApi.createTask({
+          title,
+          description: `Pomodoro focus quest (${selectedMinutes} minutes)`,
+          category: "FOCUS",
+          priority: "MEDIUM",
+        });
+        setTasks((current) => [createdTask, ...current]);
+        setNewQuestTaskId(createdTask.id);
+        focusTaskId = createdTask.id;
+      } catch (requestError) {
+        setError(getErrorMessage(requestError));
+        setSaving(false);
+        return;
+      }
+    }
     if (!sessionId) {
       setSaving(true);
       try {
-        const session = await PomodoroApi.startPomodoro(taskId);
+        const session = await PomodoroApi.startPomodoro(focusTaskId!);
         setSessionId(session.id);
       } catch (requestError) {
         setError(getErrorMessage(requestError));
@@ -232,16 +263,37 @@ export default function PomodoroPage() {
           ))}
         </div>
 
-        <div className="mx-auto mt-6 max-w-md text-left text-sm font-medium">
-          <span>Focus quest</span>
-          <Select value={taskId || undefined} disabled={running || saving} onValueChange={setTaskId}>
-            <SelectTrigger className="mt-2 border-input bg-background text-foreground">
-              <SelectValue placeholder="Choose a quest" />
-            </SelectTrigger>
-            <SelectContent className="border-border bg-popover text-popover-foreground">
-              {tasks.map((task) => <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        <div className="mx-auto mt-6 grid max-w-md grid-cols-2 gap-2">
+          <Button type="button" variant={mode === "TASK" ? "primary" : "outline"} disabled={running || saving || Boolean(sessionId)} onClick={() => { setMode("TASK"); setError(null); }}>
+            Existing task
+          </Button>
+          <Button type="button" variant={mode === "NEW_QUEST" ? "primary" : "outline"} disabled={running || saving || Boolean(sessionId)} onClick={() => { setMode("NEW_QUEST"); setError(null); }}>
+            New focus quest
+          </Button>
+        </div>
+
+        <div className="mx-auto mt-4 max-w-md text-left text-sm font-medium">
+          {mode === "TASK" ? (
+            <>
+              <span>Quest receiving the focus bonus</span>
+              <Select value={taskId || undefined} disabled={running || saving} onValueChange={setTaskId}>
+                <SelectTrigger className="mt-2 border-input bg-background text-foreground"><SelectValue placeholder="Choose a quest" /></SelectTrigger>
+                <SelectContent className="border-border bg-popover text-popover-foreground">
+                  {tasks.map((task) => <SelectItem key={task.id} value={task.id}>{task.title}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="mt-2 text-xs font-normal text-muted-foreground">Completing the timer awards focus XP while keeping the quest available.</p>
+            </>
+          ) : (
+            <>
+              <span>New focus quest</span>
+              <Input className="mt-2" value={newQuestTitle} disabled={running || saving || Boolean(newQuestTaskId)} maxLength={150}
+                placeholder="What will you focus on?" onChange={(event) => { setNewQuestTitle(event.target.value); setNewQuestTaskId(null); }} />
+              <p className="mt-2 text-xs font-normal text-muted-foreground">
+                {newQuestTaskId ? "Focus quest created and linked to this timer." : "Starting creates a medium-priority quest in the FOCUS category."}
+              </p>
+            </>
+          )}
         </div>
 
         <div className="mt-8 flex justify-center gap-3">

@@ -1,5 +1,5 @@
 import api from "./axios";
-import type { Task } from "@/types";
+import type { CreateTaskRequest, Task, UpdateTaskRequest } from "@/types";
 import { mapTask } from "./mappers";
 
 export const getTasks = async (): Promise<Task[]> => {
@@ -15,7 +15,7 @@ export const getTask = async (
 };
 
 export const createTask = async (
-    task: Partial<Task>
+    task: CreateTaskRequest
 ): Promise<Task> => {
     const { data } = await api.post("/api/task", toTaskPayload(task));
     return mapTask(data);
@@ -23,7 +23,7 @@ export const createTask = async (
 
 export const updateTask = async (
     id: string,
-    task: Partial<Task>
+    task: UpdateTaskRequest
 ): Promise<Task> => {
     const { data } = await api.put(
         `/api/task/${id}`,
@@ -33,9 +33,15 @@ export const updateTask = async (
     return mapTask(data);
 };
 
-function toTaskPayload(task: Partial<Task>) {
-  return { title: task.title, description: task.description, status: task.status,
-    due_date: task.dueDate, xp_reward: task.xpReward, category: task.category, priority: task.priority };
+function toTaskPayload(task: CreateTaskRequest | UpdateTaskRequest) {
+  return {
+    title: task.title,
+    description: task.description,
+    status: "status" in task ? task.status : undefined,
+    due_date: task.dueDate,
+    category: task.category,
+    priority: task.priority,
+  };
 }
 
 export const deleteTask = async (

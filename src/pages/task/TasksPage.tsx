@@ -7,22 +7,26 @@ import {
   RefreshCw,
   Trash2,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 import * as TaskApi from "@/api/task.api";
 import type {
   CreateTaskRequest,
   Task,
   TaskStatus,
+  TaskPriority,
 } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TaskFormValues {
   title: string;
   description: string;
   dueDate: string;
+  category: string;
+  priority: TaskPriority;
 }
 
 type TaskFilter =
@@ -113,6 +117,7 @@ export default function TasksPage() {
   const {
     register,
     handleSubmit,
+    control,
     reset,
     formState: {
       errors,
@@ -123,6 +128,8 @@ export default function TasksPage() {
       title: "",
       description: "",
       dueDate: "",
+      category: "",
+      priority: "MEDIUM",
     },
   });
 
@@ -164,6 +171,8 @@ export default function TasksPage() {
       description:
         values.description.trim() || undefined,
       dueDate: values.dueDate || undefined,
+      category: values.category.trim(),
+      priority: values.priority,
     };
 
     try {
@@ -272,7 +281,7 @@ export default function TasksPage() {
         </h2>
 
         <form
-          className="mt-4 grid gap-4 lg:grid-cols-[1fr_1fr_180px_auto]"
+          className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-[1fr_1fr_180px_160px_180px_auto]"
           onSubmit={handleSubmit(
             handleCreateTask,
           )}
@@ -309,6 +318,35 @@ export default function TasksPage() {
             placeholder="Description"
             disabled={isSubmitting}
             {...register("description")}
+          />
+
+          <div>
+            <Input
+              placeholder="Category"
+              disabled={isSubmitting}
+              aria-invalid={Boolean(errors.category)}
+              {...register("category", {
+                required: "Category is required.",
+                maxLength: { value: 50, message: "Category cannot exceed 50 characters." },
+              })}
+            />
+            {errors.category?.message && <p className="mt-1 text-xs text-destructive">{errors.category.message}</p>}
+          </div>
+
+          <Controller
+            control={control}
+            name="priority"
+            rules={{ required: true }}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange} disabled={isSubmitting}>
+                <SelectTrigger className="border-input bg-background text-foreground"><SelectValue placeholder="Priority" /></SelectTrigger>
+                <SelectContent className="border-border bg-popover text-popover-foreground">
+                  <SelectItem value="LOW">Low priority</SelectItem>
+                  <SelectItem value="MEDIUM">Medium priority</SelectItem>
+                  <SelectItem value="HIGH">High priority</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           />
 
           <Input

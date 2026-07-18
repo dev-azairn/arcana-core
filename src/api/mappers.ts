@@ -18,7 +18,7 @@ export function mapTask(row: Row): Task {
     id: String(row.id), accountId: String(row.account_id), title: String(row.title),
     description: row.description as string | null ?? null, xpReward: Number(row.xp_reward ?? 0),
     xpPenalty: Number(row.xp_penalty ?? 0), dueDate: row.due_date as string | null ?? null,
-    status: row.status as Task["status"], category: row.category as string | null ?? null,
+    status: row.status as Task["status"], category: String(row.category),
     priority: (row.priority ?? "MEDIUM") as Task["priority"], completedAt: row.completed_at as string | null ?? null,
     googleEventId: row.google_event_id as string | null ?? null, dueDateChangedCount: Number(row.due_date_changed_count ?? 0),
     deadlineChangePenalty: Number(row.deadline_change_penalty ?? 0), createdAt: String(row.created_at ?? ""),

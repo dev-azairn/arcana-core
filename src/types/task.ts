@@ -15,7 +15,7 @@ export interface Task {
   xpPenalty: number;
   dueDate: string | null;
   status: TaskStatus;
-  category: string | null;
+  category: string;
   priority: TaskPriority;
   completedAt: string | null;
   googleEventId: string | null;
@@ -28,6 +28,8 @@ export interface Task {
 
 export interface CreateTaskRequest {
   title: string;
+  category: string;
+  priority: TaskPriority;
   description?: string;
   dueDate?: string;
 }
@@ -37,4 +39,6 @@ export interface UpdateTaskRequest {
   description?: string;
   status?: TaskStatus;
   dueDate?: string | null;
+  category?: string;
+  priority?: TaskPriority;
 }
