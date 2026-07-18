@@ -5,7 +5,7 @@ export type TaskStatus =
   | "failed"
   | "cancelled";
 
-export type TaskPriority = "low" | "medium" | "high";
+export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
 
 export interface Task {
   id: string;
