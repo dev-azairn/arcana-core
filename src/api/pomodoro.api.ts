@@ -13,7 +13,7 @@ export const startPomodoro = async (
     taskId: string
 ): Promise<PomodoroSession> => {
     const { data } = await api.post(
-        "/api/pomodoro/start",
+        "/api/pomodoro",
         {
             task_id: taskId,
         }
